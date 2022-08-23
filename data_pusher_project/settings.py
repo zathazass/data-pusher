@@ -39,8 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'rest_framework_simplejwt',
-
     'data_pusher'
 ]
 
@@ -130,3 +128,18 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'data_pusher.User'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'data_pusher.authentication.AppSecretTokenAuthentication',
+    )
+}
+
+
+WEBHOOK_EVENTS = (
+    "user.create",
+    "user.update",
+    "destination.create",
+    "destination.update",
+)

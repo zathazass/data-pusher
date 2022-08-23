@@ -1,8 +1,6 @@
-import random
-import string
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-
+from .utils import generate_user_secret_token
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None):
@@ -41,7 +39,7 @@ class User(AbstractBaseUser):
     email = models.EmailField(unique=True, max_length=255)
     username = models.CharField(max_length=64)
     password = models.CharField(max_length=255)
-    app_secret_token = models.CharField(max_length=512)
+    app_secret_token = models.CharField(max_length=512, unique=True)
     has_website = models.BooleanField(default=False) 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -61,11 +59,16 @@ class User(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 
-    def generate_secret_token(self, length=32):
-        chars = string.ascii_letters + '0123456789'
-        token = random.choices(chars, k=length)
-        print(token)
-        return token
+    def create_unique_secret_token(self, length=None):
+        existing_tokens = self._meta.model.objects.all().values_list(
+            'app_secret_token', flat=True
+        )
+        while True:
+            if length: token = generate_user_secret_token(length)
+            else: token = generate_user_secret_token()
+            
+            if token in existing_tokens: continue
+            else: return token    
 
 
 class Destination(models.Model):
